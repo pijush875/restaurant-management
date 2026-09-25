@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/pijush875/restaurant-management/issues"
   },
-  "homepage": "https://github.com/pijush875/restaurant-management#readme"
+  "homepage": "https://github.com/pijush875/restaurant-management#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
