@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 app.use(express.static("."));
-
+const db = require("./db");
 app.get("/api/health", (req, res) => {
     res.json({
         success: true,
@@ -24,6 +24,36 @@ app.post("/api/test",(req,res)=>{
         data:req.body
     });
 });
+
+app.post("/api/food",(req,res)=>{
+    const { name, price } = req.body;
+    db.query(
+    'INSERT INTO foods (name, price) VALUES (?, ?)',
+    [name, price],
+    (err, result) => {
+
+        if (err) {
+            console.log('Insert failed');
+            console.log(err);
+             return res.status(500).json({
+                    success: false,
+                    message: "Food insert failed"
+                });
+        }
+
+         res.json({
+        success: true,
+        message: "Food Insert successfully",
+        id: result.insertId,
+        data: {
+                    name: name,
+                    price: price
+                }
+    });
+
+    }
+);
+});
 app.put("/api/food/:id", (req, res) => {
 
     const id = req.params.id;
@@ -42,7 +72,7 @@ app.put("/api/food/:id", (req, res) => {
 });
 app.delete("/api/food/:id", (req, res) => {
 
-    const id = req.params.id;
+    const id = req.params.id;   
 
     console.log("Food ID:", id);
     console.log("Food Data:", foodData);
@@ -56,14 +86,7 @@ app.delete("/api/food/:id", (req, res) => {
 
 });
 
-app.post("/api/food",(req,res)=>{
-    console.log(req.body)
-    res.json({
-        success:true,
-          message: "Food created successfully",
-        data:req.body
-    });
-});
+
 
 app.listen(3000, () => {
     console.log("Restaurant API running on http://localhost:3000");

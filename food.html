@@ -11,21 +11,20 @@
 
     <script>
         function testAPI() {
-
-            fetch("http://localhost:3000/api/food", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name: "Biryani",
-                    price: "200"
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-            });
+fetch("/api/food", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        name: "Chicken Biryani",
+        price: 500
+    })
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+});
 
         }
     </script>
