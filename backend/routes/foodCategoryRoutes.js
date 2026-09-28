@@ -1,0 +1,8 @@
+const express = require("express");
+const foodCategoryController = require("../controllers/foodCategoryController");
+
+const router = express.Router();
+
+router.get("/", foodCategoryController.getAllCategories);
+
+module.exports = router;
