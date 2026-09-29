@@ -18,6 +18,6 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log("Restaurant API running on http://localhost:3000");
+app.listen(5000, () => {
+    console.log("Restaurant API running on http://localhost:5000");
 });

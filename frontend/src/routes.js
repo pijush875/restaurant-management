@@ -19,6 +19,7 @@ import React from 'react'
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 // Master
 const FoodCategory = React.lazy(() => import('./views/master/FoodCategory'))
+const FoodCategoryCreate = React.lazy(() => import('./views/master/FoodCategoryCreate'))
 
 // Components
 const Accordion = React.lazy(() => import('./views/components/accordion/Accordion'))
@@ -88,6 +89,7 @@ export const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/master/food-category', name: 'Food Category', element: FoodCategory },
+  { path: '/master/food-category/create', name: 'Add Food Category', element: FoodCategoryCreate },
   { path: '/components', name: 'Components', element: Accordion, exact: true },
   { path: '/components/accordion', name: 'Accordion', element: Accordion },
   { path: '/components/alerts', name: 'Alerts', element: Alerts },

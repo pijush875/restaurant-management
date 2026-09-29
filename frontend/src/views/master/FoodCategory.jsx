@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   CAlert,
   CBadge,
@@ -27,36 +27,50 @@ import {
 } from '@coreui/icons'
 
 const FoodCategory = () => {
-  const [categories, setCategories] = useState([
-    {
-      id: 1,
-      name: 'Biryani',
-      description: 'Rice based food items',
-      status: 'Active',
-    },
-    {
-      id: 2,
-      name: 'Drinks',
-      description: 'Cold and hot drinks',
-      status: 'Active',
-    },
-    {
-      id: 3,
-      name: 'Starters',
-      description: 'Starter and appetizer items',
-      status: 'Active',
-    },
-    {
-      id: 4,
-      name: 'Desserts',
-      description: 'Sweet and dessert items',
-      status: 'Inactive',
-    },
-  ])
+  // =========================
+  // State
+  // =========================
 
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
 
-  // Search filter
+  // =========================
+  // Fetch Categories from API
+  // =========================
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/food-categories')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories')
+        }
+
+        return response.json()
+      })
+      .then((result) => {
+        if (result.success) {
+          setCategories(result.data)
+        } else {
+          setError(
+            result.message || 'Failed to fetch categories',
+          )
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        setError('Unable to load food categories')
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  // =========================
+  // Search Filter
+  // =========================
+
   const filteredCategories = useMemo(() => {
     const searchText = search.toLowerCase().trim()
 
@@ -66,13 +80,22 @@ const FoodCategory = () => {
 
     return categories.filter(
       (category) =>
-        category.name.toLowerCase().includes(searchText) ||
-        category.description.toLowerCase().includes(searchText) ||
-        category.status.toLowerCase().includes(searchText),
+        category.name
+          ?.toLowerCase()
+          .includes(searchText) ||
+        category.description
+          ?.toLowerCase()
+          .includes(searchText) ||
+        String(category.status)
+          .toLowerCase()
+          .includes(searchText),
     )
   }, [categories, search])
 
-  // Delete category
+  // =========================
+  // Delete Category - Temporary
+  // =========================
+
   const handleDelete = (id) => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this food category?',
@@ -83,53 +106,86 @@ const FoodCategory = () => {
     }
 
     setCategories(
-      categories.filter((category) => category.id !== id),
+      categories.filter(
+        (category) => category.id !== id,
+      ),
     )
   }
 
-  // Add page - temporarily
+  // =========================
+  // Add Category - Temporary
+  // =========================
+
   const handleAdd = () => {
-    alert('Add Food Category page will be created next.')
+    alert(
+      'Add Food Category page will be created next.',
+    )
   }
 
-  // Edit page - temporarily
+  // =========================
+  // Edit Category - Temporary
+  // =========================
+
   const handleEdit = (id) => {
     alert(`Edit Food Category ID: ${id}`)
   }
 
+  // =========================
+  // Category Counts
+  // =========================
+
   const activeCount = categories.filter(
-    (category) => category.status === 'Active',
+    (category) => category.status === 1,
   ).length
 
   const inactiveCount = categories.filter(
-    (category) => category.status === 'Inactive',
+    (category) => category.status === 0,
   ).length
+
+  // =========================
+  // UI
+  // =========================
 
   return (
     <>
-      {/* Page Header */}
+      {/* =========================
+          Page Header
+      ========================= */}
 
       <CRow className="mb-3">
         <CCol xs={12}>
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h4 className="mb-1">Food Category</h4>
+              <h4 className="mb-1">
+                Food Category
+              </h4>
+
               <div className="text-body-secondary">
                 Manage your restaurant food categories
               </div>
             </div>
 
-            <CButton color="primary" onClick={handleAdd}>
-              <CIcon icon={cilPlus} className="me-1" />
+            <CButton
+              color="primary"
+              onClick={handleAdd}
+            >
+              <CIcon
+                icon={cilPlus}
+                className="me-1"
+              />
               Add Food Category
             </CButton>
           </div>
         </CCol>
       </CRow>
 
-      {/* Summary Cards */}
+      {/* =========================
+          Summary Cards
+      ========================= */}
 
       <CRow className="mb-4">
+        {/* Total */}
+
         <CCol sm={6} lg={4}>
           <CCard className="h-100">
             <CCardBody>
@@ -144,6 +200,8 @@ const FoodCategory = () => {
           </CCard>
         </CCol>
 
+        {/* Active */}
+
         <CCol sm={6} lg={4}>
           <CCard className="h-100">
             <CCardBody>
@@ -157,6 +215,8 @@ const FoodCategory = () => {
             </CCardBody>
           </CCard>
         </CCol>
+
+        {/* Inactive */}
 
         <CCol sm={6} lg={4}>
           <CCard className="h-100">
@@ -173,14 +233,20 @@ const FoodCategory = () => {
         </CCol>
       </CRow>
 
-      {/* Category List */}
+      {/* =========================
+          Category List
+      ========================= */}
 
       <CRow>
         <CCol xs={12}>
           <CCard>
+            {/* Card Header */}
+
             <CCardHeader>
               <div className="d-flex justify-content-between align-items-center">
-                <strong>Category List</strong>
+                <strong>
+                  Category List
+                </strong>
 
                 <span className="text-body-secondary small">
                   {filteredCategories.length} record(s)
@@ -189,27 +255,63 @@ const FoodCategory = () => {
             </CCardHeader>
 
             <CCardBody>
-              {/* Search */}
 
-              <CRow className="mb-3">
-                <CCol md={6} lg={4}>
-                  <CInputGroup>
-                    <CInputGroupText>
-                      <CIcon icon={cilSearch} />
-                    </CInputGroupText>
+              {/* =========================
+                  Loading
+              ========================= */}
 
-                    <CFormInput
-                      placeholder="Search category..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </CInputGroup>
-                </CCol>
-              </CRow>
+              {loading && (
+                <div className="text-center py-4">
+                  Loading categories...
+                </div>
+              )}
 
-              {/* Table */}
+              {/* =========================
+                  Error
+              ========================= */}
 
-              {filteredCategories.length > 0 ? (
+              {error && (
+                <CAlert
+                  color="danger"
+                  className="mb-3"
+                >
+                  {error}
+                </CAlert>
+              )}
+
+              {/* =========================
+                  Search
+              ========================= */}
+
+              {!loading && !error && (
+                <CRow className="mb-3">
+                  <CCol md={6} lg={4}>
+                    <CInputGroup>
+                      <CInputGroupText>
+                        <CIcon
+                          icon={cilSearch}
+                        />
+                      </CInputGroupText>
+
+                      <CFormInput
+                        placeholder="Search category..."
+                        value={search}
+                        onChange={(e) =>
+                          setSearch(e.target.value)
+                        }
+                      />
+                    </CInputGroup>
+                  </CCol>
+                </CRow>
+              )}
+
+              {/* =========================
+                  Table
+              ========================= */}
+
+              {!loading &&
+              !error &&
+              filteredCategories.length > 0 ? (
                 <CTable
                   hover
                   responsive
@@ -219,6 +321,7 @@ const FoodCategory = () => {
                 >
                   <CTableHead>
                     <CTableRow>
+
                       <CTableHeaderCell width="70">
                         #
                       </CTableHeaderCell>
@@ -238,16 +341,24 @@ const FoodCategory = () => {
                       <CTableHeaderCell width="180">
                         Action
                       </CTableHeaderCell>
+
                     </CTableRow>
                   </CTableHead>
 
                   <CTableBody>
                     {filteredCategories.map(
                       (category, index) => (
-                        <CTableRow key={category.id}>
+                        <CTableRow
+                          key={category.id}
+                        >
+
+                          {/* Number */}
+
                           <CTableDataCell>
                             {index + 1}
                           </CTableDataCell>
+
+                          {/* Name */}
 
                           <CTableDataCell>
                             <strong>
@@ -255,14 +366,19 @@ const FoodCategory = () => {
                             </strong>
                           </CTableDataCell>
 
+                          {/* Description */}
+
                           <CTableDataCell>
                             <span className="text-body-secondary">
-                              {category.description}
+                              {category.description ||
+                                '-'}
                             </span>
                           </CTableDataCell>
 
+                          {/* Status */}
+
                           <CTableDataCell>
-                            {category.status === 'Active' ? (
+                            {category.status === 1 ? (
                               <CBadge color="success">
                                 Active
                               </CBadge>
@@ -273,14 +389,21 @@ const FoodCategory = () => {
                             )}
                           </CTableDataCell>
 
+                          {/* Actions */}
+
                           <CTableDataCell>
+
+                            {/* Edit */}
+
                             <CButton
                               color="info"
                               variant="outline"
                               size="sm"
                               className="me-2"
                               onClick={() =>
-                                handleEdit(category.id)
+                                handleEdit(
+                                  category.id,
+                                )
                               }
                             >
                               <CIcon
@@ -290,12 +413,16 @@ const FoodCategory = () => {
                               Edit
                             </CButton>
 
+                            {/* Delete */}
+
                             <CButton
                               color="danger"
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                handleDelete(category.id)
+                                handleDelete(
+                                  category.id,
+                                )
                               }
                             >
                               <CIcon
@@ -304,17 +431,26 @@ const FoodCategory = () => {
                               />
                               Delete
                             </CButton>
+
                           </CTableDataCell>
+
                         </CTableRow>
                       ),
                     )}
                   </CTableBody>
                 </CTable>
               ) : (
-                <CAlert color="warning" className="mb-0">
-                  No food category found.
-                </CAlert>
+                !loading &&
+                !error && (
+                  <CAlert
+                    color="warning"
+                    className="mb-0"
+                  >
+                    No food category found.
+                  </CAlert>
+                )
               )}
+
             </CCardBody>
           </CCard>
         </CCol>

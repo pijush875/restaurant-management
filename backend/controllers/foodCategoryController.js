@@ -25,6 +25,12 @@ const getAllCategories = (req, res) => {
     );
 
 };
+// =========================
+// ADD CATEGORY
+// =========================
+const getcreateCategory = (req,res) => {
+
+};
 
 module.exports = {
     getAllCategories
