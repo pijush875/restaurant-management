@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CButton,
   CCard,
@@ -14,17 +15,36 @@ import {
 } from '@coreui/react'
 
 const FoodCategoryCreate = () => {
+  const navigate = useNavigate()
   const [categoryName, setCategoryName] = useState('')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState('1')
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+const handleSubmit = async (e) => {
+  e.preventDefault()
 
-    console.log('Category Name:', categoryName)
-    console.log('Description:', description)
-    console.log('Status:', status)
-  }
+  const response = await fetch(
+    'http://localhost:5000/api/food-categories',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: categoryName,
+        description: description,
+        status: status,
+      }),
+    },
+  )
+
+  const result = await response.json()
+
+  console.log(result)
+  if (result.success) {
+  navigate('/master/food-category')
+}
+}
 
   return (
     <CRow>
@@ -38,7 +58,9 @@ const FoodCategoryCreate = () => {
             <CForm onSubmit={handleSubmit}>
               <CRow>
                 <CCol md={6} className="mb-3">
-                  <CFormLabel>Category Name</CFormLabel>
+                  <CFormLabel>
+  Category Name <span className="text-danger">*</span>
+</CFormLabel>
 
                   <CFormInput
                     type="text"
@@ -61,7 +83,7 @@ const FoodCategoryCreate = () => {
                 </CCol>
 
                 <CCol xs={12} className="mb-3">
-                  <CFormLabel>Description</CFormLabel>
+                  <CFormLabel>Description<span className="text-danger">*</span></CFormLabel>
 
                   <CFormTextarea
                     rows={4}

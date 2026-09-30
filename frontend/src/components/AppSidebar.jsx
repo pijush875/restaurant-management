@@ -67,7 +67,6 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/">
-        <CSidebarBrand to="/">
   <span className="sidebar-brand-full">
     🍽 Restaurant Management
   </span>
@@ -76,7 +75,6 @@ const AppSidebar = () => {
     🍽
   </span>
 </CSidebarBrand>
-        </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
           dark

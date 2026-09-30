@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CAlert,
   CBadge,
@@ -27,6 +28,7 @@ import {
 } from '@coreui/icons'
 
 const FoodCategory = () => {
+  const navigate = useNavigate()
   // =========================
   // State
   // =========================
@@ -113,16 +115,6 @@ const FoodCategory = () => {
   }
 
   // =========================
-  // Add Category - Temporary
-  // =========================
-
-  const handleAdd = () => {
-    alert(
-      'Add Food Category page will be created next.',
-    )
-  }
-
-  // =========================
   // Edit Category - Temporary
   // =========================
 
@@ -166,9 +158,9 @@ const FoodCategory = () => {
             </div>
 
             <CButton
-              color="primary"
-              onClick={handleAdd}
-            >
+  color="primary"
+  onClick={() => navigate('/master/food-category/create')}
+>
               <CIcon
                 icon={cilPlus}
                 className="me-1"
