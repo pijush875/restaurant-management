@@ -3,13 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
   CAlert,
-  CBadge,
   CButton,
   CCard,
   CCardBody,
   CCardHeader,
   CCol,
   CFormInput,
+  CFormSwitch,
   CInputGroup,
   CInputGroupText,
   CRow,
@@ -57,44 +57,70 @@ const FoodCategory = () => {
 
   useEffect(() => {
 
-    fetch('http://localhost:5000/api/food-categories')
-
-      .then((response) => {
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories')
-        }
-
-        return response.json()
-      })
-
-      .then((result) => {
-
-        if (result.success) {
-
-          setCategories(result.data)
-
-        } else {
-
-          setError(
-            result.message || 'Failed to fetch categories',
-          )
-        }
-      })
-
-      .catch((err) => {
-
-        console.error(err)
-
-        setError('Unable to load food categories')
-      })
-
-      .finally(() => {
-
-        setLoading(false)
-      })
+    fetchCategories()
 
   }, [])
+
+
+  const fetchCategories = async () => {
+
+    try {
+
+      setLoading(true)
+      setError('')
+
+      const response = await fetch(
+        'http://localhost:5000/api/food-categories'
+      )
+
+      if (!response.ok) {
+
+        throw new Error(
+          'Failed to fetch categories'
+        )
+
+      }
+
+      const result = await response.json()
+
+      console.log(
+        'Category List Response:',
+        result
+      )
+
+
+      if (result.success) {
+
+        setCategories(result.data)
+
+      } else {
+
+        setError(
+          result.message ||
+          'Failed to fetch categories'
+        )
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        'Category Fetch Error:',
+        err
+      )
+
+      setError(
+        err.message ||
+        'Unable to load food categories'
+      )
+
+    } finally {
+
+      setLoading(false)
+
+    }
+
+  }
 
 
   // =========================
@@ -103,14 +129,20 @@ const FoodCategory = () => {
 
   const filteredCategories = useMemo(() => {
 
-    const searchText = search.toLowerCase().trim()
+    const searchText =
+      search.toLowerCase().trim()
+
 
     if (!searchText) {
+
       return categories
+
     }
+
 
     return categories.filter(
       (category) =>
+
         category.name
           ?.toLowerCase()
           .includes(searchText) ||
@@ -119,9 +151,11 @@ const FoodCategory = () => {
           ?.toLowerCase()
           .includes(searchText) ||
 
-        String(category.status)
-          .toLowerCase()
-          .includes(searchText),
+        (
+          category.status === 1
+            ? 'active'
+            : 'inactive'
+        ).includes(searchText)
     )
 
   }, [categories, search])
@@ -129,35 +163,264 @@ const FoodCategory = () => {
 
   // =========================
   // Delete Category
-  // Temporary
   // =========================
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
 
     const confirmDelete = window.confirm(
-      'Are you sure you want to delete this food category?',
+      'Are you sure you want to delete this food category?'
     )
+
 
     if (!confirmDelete) {
+
       return
+
     }
 
-    setCategories(
-      categories.filter(
-        (category) => category.id !== id,
-      ),
-    )
+
+    try {
+
+      setError('')
+
+
+      const response = await fetch(
+        `http://localhost:5000/api/food-categories/${id}`,
+        {
+          method: 'DELETE',
+        }
+      )
+
+
+      const responseText =
+        await response.text()
+
+
+      console.log(
+        'Delete Status:',
+        response.status
+      )
+
+      console.log(
+        'Delete Response:',
+        responseText
+      )
+
+
+      let data
+
+
+      try {
+
+        data = JSON.parse(
+          responseText
+        )
+
+      } catch (jsonError) {
+
+        console.error(
+          'JSON Parse Error:',
+          jsonError
+        )
+
+        throw new Error(
+          `Backend JSON response দেয়নি: ${responseText}`
+        )
+
+      }
+
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.message ||
+          'Failed to delete food category'
+        )
+
+      }
+
+
+      // =========================
+      // Remove From List
+      // =========================
+
+      setCategories(
+        (previousCategories) =>
+          previousCategories.filter(
+            (category) =>
+              category.id !== id
+          )
+      )
+
+
+      // =========================
+      // Success Message
+      // =========================
+
+      setSuccessMessage(
+        data.message ||
+        'Food category deleted successfully'
+      )
+
+
+    } catch (err) {
+
+      console.error(
+        'Delete Error:',
+        err
+      )
+
+      setError(
+        err.message ||
+        'Unable to delete food category'
+      )
+
+    }
+
+  }
+
+
+  // =========================
+  // Toggle Category Status
+  // =========================
+
+  const handleStatusToggle = async (
+    id,
+    currentStatus
+  ) => {
+
+    const newStatus =
+      Number(currentStatus) === 1
+        ? 0
+        : 1
+
+
+    try {
+
+      setError('')
+
+
+      const response = await fetch(
+        `http://localhost:5000/api/food-categories/${id}/status`,
+        {
+          method: 'PATCH',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+
+          body: JSON.stringify({
+            status: newStatus,
+          }),
+        }
+      )
+
+
+      const responseText =
+        await response.text()
+
+
+      console.log(
+        'Status Update Status:',
+        response.status
+      )
+
+      console.log(
+        'Status Update Response:',
+        responseText
+      )
+
+
+      let data
+
+
+      try {
+
+        data = JSON.parse(
+          responseText
+        )
+
+      } catch (jsonError) {
+
+        console.error(
+          'JSON Parse Error:',
+          jsonError
+        )
+
+        throw new Error(
+          `Backend JSON response দেয়নি: ${responseText}`
+        )
+
+      }
+
+
+      if (!response.ok || !data.success) {
+
+        throw new Error(
+          data.message ||
+          'Failed to update category status'
+        )
+
+      }
+
+
+      // =========================
+      // Update List
+      // =========================
+
+      setCategories(
+        (previousCategories) =>
+          previousCategories.map(
+            (category) =>
+
+              category.id === id
+                ? {
+                    ...category,
+                    status: newStatus,
+                  }
+                : category
+          )
+      )
+
+
+      // =========================
+      // Success Message
+      // =========================
+
+      setSuccessMessage(
+        data.message ||
+        'Category status updated successfully'
+      )
+
+
+    } catch (err) {
+
+      console.error(
+        'Status Update Error:',
+        err
+      )
+
+      setError(
+        err.message ||
+        'Unable to update category status'
+      )
+
+    }
+
   }
 
 
   // =========================
   // Edit Category
-  // Temporary
   // =========================
 
   const handleEdit = (id) => {
 
-    alert(`Edit Food Category ID: ${id}`)
+    navigate(
+      `/master/food-category/edit/${id}`
+    )
+
   }
 
 
@@ -165,14 +428,18 @@ const FoodCategory = () => {
   // Category Counts
   // =========================
 
-  const activeCount = categories.filter(
-    (category) => category.status === 1,
-  ).length
+  const activeCount =
+    categories.filter(
+      (category) =>
+        Number(category.status) === 1
+    ).length
 
 
-  const inactiveCount = categories.filter(
-    (category) => category.status === 0,
-  ).length
+  const inactiveCount =
+    categories.filter(
+      (category) =>
+        Number(category.status) === 0
+    ).length
 
 
   // =========================
@@ -180,20 +447,28 @@ const FoodCategory = () => {
   // =========================
 
   return (
+
     <>
+
 
       {/* =========================
           Success Message
       ========================= */}
 
       {successMessage && (
+
         <CAlert
           color="success"
           dismissible
-          onClose={() => setSuccessMessage('')}
+          onClose={() =>
+            setSuccessMessage('')
+          }
         >
+
           {successMessage}
+
         </CAlert>
+
       )}
 
 
@@ -214,7 +489,10 @@ const FoodCategory = () => {
               </h4>
 
               <div className="text-body-secondary">
-                Manage your restaurant food categories
+
+                Manage your restaurant food
+                categories
+
               </div>
 
             </div>
@@ -223,7 +501,9 @@ const FoodCategory = () => {
             <CButton
               color="primary"
               onClick={() =>
-                navigate('/master/food-category/create')
+                navigate(
+                  '/master/food-category/create'
+                )
               }
             >
 
@@ -259,11 +539,15 @@ const FoodCategory = () => {
             <CCardBody>
 
               <div className="text-body-secondary mb-1">
+
                 Total Categories
+
               </div>
 
               <h3 className="mb-0">
+
                 {categories.length}
+
               </h3>
 
             </CCardBody>
@@ -282,11 +566,15 @@ const FoodCategory = () => {
             <CCardBody>
 
               <div className="text-body-secondary mb-1">
+
                 Active Categories
+
               </div>
 
               <h3 className="mb-0 text-success">
+
                 {activeCount}
+
               </h3>
 
             </CCardBody>
@@ -305,11 +593,15 @@ const FoodCategory = () => {
             <CCardBody>
 
               <div className="text-body-secondary mb-1">
+
                 Inactive Categories
+
               </div>
 
               <h3 className="mb-0 text-secondary">
+
                 {inactiveCount}
+
               </h3>
 
             </CCardBody>
@@ -331,6 +623,7 @@ const FoodCategory = () => {
 
           <CCard>
 
+
             {/* Card Header */}
 
             <CCardHeader>
@@ -342,7 +635,11 @@ const FoodCategory = () => {
                 </strong>
 
                 <span className="text-body-secondary small">
-                  {filteredCategories.length} record(s)
+
+                  {filteredCategories.length}
+                  {' '}
+                  record(s)
+
                 </span>
 
               </div>
@@ -358,9 +655,13 @@ const FoodCategory = () => {
               ========================= */}
 
               {loading && (
+
                 <div className="text-center py-4">
+
                   Loading categories...
+
                 </div>
+
               )}
 
 
@@ -369,12 +670,16 @@ const FoodCategory = () => {
               ========================= */}
 
               {error && (
+
                 <CAlert
                   color="danger"
                   className="mb-3"
                 >
+
                   {error}
+
                 </CAlert>
+
               )}
 
 
@@ -382,11 +687,15 @@ const FoodCategory = () => {
                   Search
               ========================= */}
 
-              {!loading && !error && (
+              {!loading &&
+              !error && (
 
                 <CRow className="mb-3">
 
-                  <CCol md={6} lg={4}>
+                  <CCol
+                    md={6}
+                    lg={4}
+                  >
 
                     <CInputGroup>
 
@@ -403,7 +712,9 @@ const FoodCategory = () => {
                         placeholder="Search category..."
                         value={search}
                         onChange={(e) =>
-                          setSearch(e.target.value)
+                          setSearch(
+                            e.target.value
+                          )
                         }
                       />
 
@@ -432,28 +743,43 @@ const FoodCategory = () => {
                   className="mb-0"
                 >
 
+
                   <CTableHead>
 
                     <CTableRow>
 
                       <CTableHeaderCell width="70">
+
                         #
+
                       </CTableHeaderCell>
 
+
                       <CTableHeaderCell>
+
                         Name
+
                       </CTableHeaderCell>
+
 
                       <CTableHeaderCell>
+
                         Description
+
                       </CTableHeaderCell>
 
-                      <CTableHeaderCell width="120">
+
+                      <CTableHeaderCell width="140">
+
                         Status
+
                       </CTableHeaderCell>
+
 
                       <CTableHeaderCell width="180">
+
                         Action
+
                       </CTableHeaderCell>
 
                     </CTableRow>
@@ -474,7 +800,9 @@ const FoodCategory = () => {
                           {/* Number */}
 
                           <CTableDataCell>
+
                             {index + 1}
+
                           </CTableDataCell>
 
 
@@ -483,7 +811,9 @@ const FoodCategory = () => {
                           <CTableDataCell>
 
                             <strong>
+
                               {category.name}
+
                             </strong>
 
                           </CTableDataCell>
@@ -495,30 +825,57 @@ const FoodCategory = () => {
 
                             <span className="text-body-secondary">
 
-                              {category.description || '-'}
+                              {category.description ||
+                                '-'}
 
                             </span>
 
                           </CTableDataCell>
 
 
-                          {/* Status */}
+                          {/* Status Toggle */}
 
                           <CTableDataCell>
 
-                            {category.status === 1 ? (
+                            <div className="d-flex align-items-center">
 
-                              <CBadge color="success">
-                                Active
-                              </CBadge>
+                              <CFormSwitch
+                                size="lg"
+                                checked={
+                                  Number(
+                                    category.status
+                                  ) === 1
+                                }
+                                onChange={() =>
+                                  handleStatusToggle(
+                                    category.id,
+                                    Number(
+                                      category.status
+                                    )
+                                  )
+                                }
+                              />
 
-                            ) : (
 
-                              <CBadge color="secondary">
-                                Inactive
-                              </CBadge>
+                              <span
+                                className={
+                                  Number(
+                                    category.status
+                                  ) === 1
+                                    ? 'text-success ms-2'
+                                    : 'text-secondary ms-2'
+                                }
+                              >
 
-                            )}
+                                {Number(
+                                  category.status
+                                ) === 1
+                                  ? 'Active'
+                                  : 'Inactive'}
+
+                              </span>
+
+                            </div>
 
                           </CTableDataCell>
 
@@ -536,7 +893,9 @@ const FoodCategory = () => {
                               size="sm"
                               className="me-2"
                               onClick={() =>
-                                handleEdit(category.id)
+                                handleEdit(
+                                  category.id
+                                )
                               }
                             >
 
@@ -557,7 +916,9 @@ const FoodCategory = () => {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                handleDelete(category.id)
+                                handleDelete(
+                                  category.id
+                                )
                               }
                             >
 
@@ -590,7 +951,9 @@ const FoodCategory = () => {
                     color="warning"
                     className="mb-0"
                   >
+
                     No food category found.
+
                   </CAlert>
 
                 )
@@ -606,7 +969,9 @@ const FoodCategory = () => {
       </CRow>
 
     </>
+
   )
+
 }
 
 
