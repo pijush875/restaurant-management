@@ -60,7 +60,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Food',
-        to: '/master/food',
+        to: '/master/food-item',
         icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
       },
       {

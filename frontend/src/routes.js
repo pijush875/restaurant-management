@@ -15,12 +15,15 @@
 
 import React from 'react'
 
-//FoodCategory Dashboard
+// Dashboard
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 // Master
+//FoodCategory
 const FoodCategory = React.lazy(() => import('./views/master/FoodCategory'))
 const FoodCategoryCreate = React.lazy(() => import('./views/master/FoodCategoryCreate'))
 const FoodCategoryEdit = React.lazy(() => import('./views/master/FoodCategoryEdit'))
+//Food Item
+const FoodItem =React.lazy(() => import('./views/master/FoodItem'))
 
 
 /**
@@ -46,5 +49,6 @@ export const routes = [
   { path: '/master/food-category', name: 'Food Category', element: FoodCategory },
   { path: '/master/food-category/create', name: 'Add Food Category', element: FoodCategoryCreate },
   { path: '/master/food-category/edit/:id', name: 'Edit Food Category', element: FoodCategoryEdit },
+  { path: '/master/food-item',name: 'Food Item', element: FoodItem},
 ]
 export default routes

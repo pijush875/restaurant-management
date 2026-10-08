@@ -8,8 +8,10 @@ app.use(cors());
 app.use(express.static("."));
 
 const foodCategoryRoutes = require("./routes/foodCategoryRoutes");
+const foodItemRoutes = require("./routes/foodItem");
 
 app.use("/api/food-categories", foodCategoryRoutes);
+app.use("/api/food-items", foodItemRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({
